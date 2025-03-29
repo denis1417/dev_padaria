@@ -1,0 +1,125 @@
+tml>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Padaria Pão Doce - Controle de Estoque</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Open+Sans&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Biblioteca Chart.js -->
+  <style>
+    body {
+      background-color: #fff8f0;
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #4e342e;
+    }
+
+    h1 {
+      text-align: center;
+      font-family: 'Pacifico', cursive;
+      color: #d2691e;
+    }
+
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f7c59f;
+      color: #4e342e;
+      font-size: 1.1em;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fdf1e1;
+    }
+
+    .alerta-3 {
+      background-color: #fff5b1 !important; /* Amarelo pastel */
+      color: #5a5a00;
+      font-weight: bold;
+    }
+
+    .alerta-1 {
+      background-color: #ffb3b3 !important; /* Vermelho pastel */
+      color: #700000;
+      font-weight: bold;
+    }
+
+    /* Estilo do gráfico */
+    .grafico-container {
+      width: 60%;
+      margin: 30px auto;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+    <h1>Padaria e Confeitaria Silvia</h1>
+
+    <!-- Gráfico de Pizza -->
+    <div class="grafico-container">
+      <canvas id="graficoEstoque"></canvas>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+               <th>Produto</th> 
+               <th>Lote</th>
+               <th>Data de Validade</th>
+            </tr>   
+        </thead>
+        <tbody>
+        {% for produto in produtos %}
+         <tr 
+            {% if produto.dias_para_vencer == 3 %}
+              class="alerta-3"
+            {% elif produto.dias_para_vencer <= 1 %}
+              class="alerta-1"
+            {% endif %}>
+            <td>{{ produto.produto }}</td> <!-- Corrigido para produto.produto -->
+            <td>{{ produto.lote }}</td>
+            <td>{{ produto.validade }}</td>
+         </tr> 
+        {% endfor %} 
+        </tbody>
+    </table>   
+
+    <script>
+      var ctx = document.getElementById('graficoEstoque').getContext('2d');
+      var graficoEstoque = new Chart(ctx, {
+          type: 'pie',
+          data: {
+              labels: ['Produtos Prontos', 'Alerta Amarelo (3 dias)', 'Alerta Vermelho (1 dia ou vencidos)'],
+              datasets: [{
+                  data: [{{ prontos }}, {{ alerta_3 }}, {{ alerta_1 }}],
+                  backgroundColor: ['#ffffff', '#ffeb3b', '#f44336'], /* Verde, Amarelo e Vermelho */
+                  borderColor: ['#689f38', '#fbc02d', '#d32f2f'], /* Tons mais escuros */
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              responsive: true,
+              plugins: {
+                  legend: {
+                      position: 'bottom'
+                  }
+              }
+          }
+      });
+    </script>  
+</body>
+</html>

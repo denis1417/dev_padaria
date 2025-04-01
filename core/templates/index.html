@@ -1,16 +1,17 @@
-tml>
+<!DOCTYPE html>
 <html lang="pt-br">
-<head>
+ <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Padaria Pão Doce - Controle de Estoque</title>
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Open+Sans&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Biblioteca Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    
     body {
-      background-color: #fff8f0;
-      font-family: 'Open Sans', sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #ede7f6); 
+            font-family: 'Open Sans', sans-serif;
       margin: 0;
       padding: 20px;
       color: #4e342e;
@@ -19,21 +20,24 @@ tml>
     h1 {
       text-align: center;
       font-family: 'Pacifico', cursive;
-      color: #d2691e;
+      color: #d2691e; 
     }
 
     table {
       width: 80%;
       margin: 20px auto;
       border-collapse: collapse;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     th, td {
       padding: 12px;
       text-align: center;
       border-bottom: 1px solid #ddd;
+      color: #4e342e;
     }
 
     th {
@@ -46,57 +50,95 @@ tml>
       background-color: #fdf1e1;
     }
 
+    
     .alerta-3 {
-      background-color: #fff5b1 !important; /* Amarelo pastel */
-      color: #5a5a00;
+      background-color: #fff3b0 !important; 
+      color: #4e342e;
       font-weight: bold;
     }
 
+    
     .alerta-1 {
-      background-color: #ffb3b3 !important; /* Vermelho pastel */
+      background-color: #ffb3b3 !important; 
       color: #700000;
       font-weight: bold;
     }
 
     /* Estilo do gráfico */
     .grafico-container {
-      width: 60%;
+      width: 100%;
+      max-width: 300px;
       margin: 30px auto;
       text-align: center;
     }
+    
+    .grafico-container canvas {
+      width: 300px !important;
+      height: 300px !important;
+    }
+
+    /* Botão para redirecionamento */
+    .botao-admin {
+      background-color: #4CAF50; 
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .botao-admin:hover {
+      background-color: #45a049; 
+    }
   </style>
-</head>
-<body>
+ </head>
+ <body>
     <h1>Padaria e Confeitaria Silvia</h1>
 
     <!-- Gráfico de Pizza -->
     <div class="grafico-container">
-      <canvas id="graficoEstoque"></canvas>
+      <canvas id="graficoEstoque" width="300" height="300"></canvas>
     </div>
 
+    <!-- Tabela de produtos -->
     <table>
         <thead>
             <tr>
-               <th>Produto</th> 
-               <th>Lote</th>
-               <th>Data de Validade</th>
+                <th>Produto</th> 
+                <th>Lote</th>
+                <th>Data de Validade</th>
             </tr>   
         </thead>
         <tbody>
-        {% for produto in produtos %}
-         <tr 
-            {% if produto.dias_para_vencer == 3 %}
-              class="alerta-3"
-            {% elif produto.dias_para_vencer <= 1 %}
-              class="alerta-1"
-            {% endif %}>
-            <td>{{ produto.produto }}</td> <!-- Corrigido para produto.produto -->
-            <td>{{ produto.lote }}</td>
-            <td>{{ produto.validade }}</td>
-         </tr> 
-        {% endfor %} 
+            {% for produto in produtos %}
+            <tr 
+                {% if produto.dias_para_vencer <= 1 %}
+                    class="alerta-1"  <!-- Vermelho -->
+                {% elif produto.dias_para_vencer <= 3 %}
+                    class="alerta-3"  
+                {% endif %}>
+                <td>{{ produto.produto }}</td>
+                <td>{{ produto.lote }}</td>
+                <td>{{ produto.validade }}</td>
+            </tr> 
+            {% endfor %} 
         </tbody>
-    </table>   
+    </table>
+
+    <!-- Botão para redirecionamento ao admin -->
+    <button class="botao-admin" onclick="confirmarRedirecionamento()">Ir para o setor administrativo</button>
+
+    <script>
+      // Função que mostra o prompt para redirecionamento
+      function confirmarRedirecionamento() {
+          if (confirm("Você gostaria de ser redirecionado ao setor administrativo?")) {
+              window.location.href = "/admin";  // Redireciona para a página de admin do Django
+          }
+      }
+    </script>
 
     <script>
       var ctx = document.getElementById('graficoEstoque').getContext('2d');
@@ -105,14 +147,15 @@ tml>
           data: {
               labels: ['Produtos Prontos', 'Alerta Amarelo (3 dias)', 'Alerta Vermelho (1 dia ou vencidos)'],
               datasets: [{
-                  data: [{{ prontos }}, {{ alerta_3 }}, {{ alerta_1 }}],
-                  backgroundColor: ['#ffffff', '#ffeb3b', '#f44336'], /* Verde, Amarelo e Vermelho */
-                  borderColor: ['#689f38', '#fbc02d', '#d32f2f'], /* Tons mais escuros */
+                  data: [parseInt("{{ prontos|escapejs }}"), parseInt("{{ alerta_3|escapejs }}"), parseInt("{{ alerta_1|escapejs }}")],
+                  backgroundColor: ['#ffffff', '#ffeb3b', '#f44336'],
+                  borderColor: ['#689f38', '#fbc02d', '#d32f2f'],
                   borderWidth: 1
               }]
           },
           options: {
-              responsive: true,
+              responsive: false,
+              maintainAspectRatio: false,
               plugins: {
                   legend: {
                       position: 'bottom'
@@ -120,6 +163,7 @@ tml>
               }
           }
       });
-    </script>  
-</body>
+    </script>          
+    
+ </body>
 </html>
